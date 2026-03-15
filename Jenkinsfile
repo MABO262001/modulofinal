@@ -218,6 +218,7 @@ pipeline {
                 sh '''
                     set +e
                     docker rm -f zap_scan >/dev/null 2>&1 || true
+                    rm -f "$REPORTS_DIR/zap_report.json" "$REPORTS_DIR/zap_report.html" || true
 
                     docker run --name zap_scan \
                       -u 0:0 \
@@ -230,8 +231,15 @@ pipeline {
                     ZAP_EXIT=$?
                     echo "ZAP exit code: $ZAP_EXIT"
 
+                    echo "Intentando copiar reportes ZAP..."
                     docker cp zap_scan:/zap/wrk/zap_report.json "$REPORTS_DIR/zap_report.json" || true
                     docker cp zap_scan:/zap/wrk/zap_report.html "$REPORTS_DIR/zap_report.html" || true
+                    docker cp zap_scan:/home/zap/zap_report.json "$REPORTS_DIR/zap_report.json" || true
+                    docker cp zap_scan:/home/zap/zap_report.html "$REPORTS_DIR/zap_report.html" || true
+
+                    echo "Listado interno del contenedor ZAP:"
+                    docker exec zap_scan sh -c 'ls -lah /zap/wrk || true; ls -lah /home/zap || true' || true
+
                     docker rm -f zap_scan >/dev/null 2>&1 || true
 
                     echo "Contenido tras ZAP:"
