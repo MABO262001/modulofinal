@@ -59,7 +59,6 @@ pipeline {
                     rm -rf "$REPORTS_DIR"
                     mkdir -p "$REPORTS_DIR"
                     chmod -R 777 "$REPORTS_DIR"
-                    echo "Contenido inicial de REPORTS_DIR:"
                     ls -lah "$REPORTS_DIR"
                 '''
             }
@@ -69,18 +68,21 @@ pipeline {
             steps {
                 sh '''
                     set +e
-                    rm -f "$REPORTS_DIR/semgrep_report.json" || true
+                    docker rm -f semgrep_scan >/dev/null 2>&1 || true
 
-                    docker run --rm \
+                    docker run --name semgrep_scan \
                       -u 0:0 \
                       -v "$WORKSPACE:/src" \
-                      -v "$REPORTS_DIR:/reports" \
                       -w /src \
                       returntocorp/semgrep \
-                      semgrep --config auto . --json --output /reports/semgrep_report.json
+                      sh -c 'semgrep --config auto . --json --output /tmp/semgrep_report.json'
 
-                    EXIT_CODE=$?
-                    echo "Semgrep exit code: $EXIT_CODE"
+                    SEMGREP_EXIT=$?
+                    echo "Semgrep exit code: $SEMGREP_EXIT"
+
+                    docker cp semgrep_scan:/tmp/semgrep_report.json "$REPORTS_DIR/semgrep_report.json" || true
+                    docker rm -f semgrep_scan >/dev/null 2>&1 || true
+
                     echo "Contenido tras Semgrep:"
                     ls -lah "$REPORTS_DIR" || true
                     exit 0
@@ -111,20 +113,23 @@ pipeline {
             steps {
                 sh '''
                     set +e
-                    rm -f "$REPORTS_DIR/trivy_report.json" || true
+                    docker rm -f trivy_scan >/dev/null 2>&1 || true
 
-                    docker run --rm \
+                    docker run --name trivy_scan \
                       -u 0:0 \
                       -v /var/run/docker.sock:/var/run/docker.sock \
-                      -v "$REPORTS_DIR:/reports" \
                       aquasec/trivy:latest image \
                       --timeout 15m \
                       --format json \
-                      --output /reports/trivy_report.json \
+                      --output /tmp/trivy_report.json \
                       "$IMAGE_NAME"
 
-                    EXIT_CODE=$?
-                    echo "Trivy exit code: $EXIT_CODE"
+                    TRIVY_EXIT=$?
+                    echo "Trivy exit code: $TRIVY_EXIT"
+
+                    docker cp trivy_scan:/tmp/trivy_report.json "$REPORTS_DIR/trivy_report.json" || true
+                    docker rm -f trivy_scan >/dev/null 2>&1 || true
+
                     echo "Contenido tras Trivy:"
                     ls -lah "$REPORTS_DIR" || true
                     exit 0
@@ -212,22 +217,23 @@ pipeline {
             steps {
                 sh '''
                     set +e
-                    rm -f "$REPORTS_DIR/zap_report.json" "$REPORTS_DIR/zap_report.html" "$REPORTS_DIR/zap_report.md" || true
-                    chmod -R 777 "$REPORTS_DIR" || true
+                    docker rm -f zap_scan >/dev/null 2>&1 || true
 
-                    docker run --rm \
+                    docker run --name zap_scan \
                       -u 0:0 \
-                      -v "$REPORTS_DIR:/zap/wrk" \
-                      --workdir /zap/wrk \
                       ghcr.io/zaproxy/zaproxy:stable \
                       zap-baseline.py \
                       -t http://host.docker.internal:8081/health \
                       -J zap_report.json \
-                      -r zap_report.html \
-                      -w zap_report.md
+                      -r zap_report.html
 
-                    EXIT_CODE=$?
-                    echo "ZAP exit code: $EXIT_CODE"
+                    ZAP_EXIT=$?
+                    echo "ZAP exit code: $ZAP_EXIT"
+
+                    docker cp zap_scan:/zap/wrk/zap_report.json "$REPORTS_DIR/zap_report.json" || true
+                    docker cp zap_scan:/zap/wrk/zap_report.html "$REPORTS_DIR/zap_report.html" || true
+                    docker rm -f zap_scan >/dev/null 2>&1 || true
+
                     echo "Contenido tras ZAP:"
                     ls -lah "$REPORTS_DIR" || true
                     exit 0
