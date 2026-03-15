@@ -16,19 +16,22 @@ pipeline {
     }
 
     environment {
-        GIT_URL = 'https://github.com/MABO262001/modulofinal.git'
-        VM_IP = 'host.docker.internal'
+        GIT_URL     = 'https://github.com/MABO262001/modulofinal.git'
+        GIT_BRANCH  = 'main'
+        VM_IP       = 'host.docker.internal'
         VM_SSH_PORT = '2222'
-        APP_PATH = '/tmp'
+        APP_PATH    = '/tmp'
         REPORTS_DIR = "${WORKSPACE}/modulofin"
-        IMAGE_NAME = 'app-segura:latest'
-        APP_PORT = '8081'
+        IMAGE_NAME  = 'app-segura:latest'
+        APP_PORT    = '8081'
+        SSH_OPTS    = '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20'
     }
 
     stages {
         stage('Verificacion de Entorno') {
             steps {
                 sh '''
+                    set +e
                     echo "========== ENTORNO =========="
                     echo "Workspace: $WORKSPACE"
                     whoami
@@ -37,25 +40,15 @@ pipeline {
                     git --version
                     docker --version
                     docker ps || true
-                '''
-            }
-        }
-
-        stage('Preparar Workspace') {
-            steps {
-                sh '''
-                    set -e
-                    mkdir -p "$WORKSPACE"
-                    git config --global --add safe.directory "$WORKSPACE" || true
-                    git config --global --add safe.directory '*' || true
-                    rm -rf "$WORKSPACE/.git"
+                    getent hosts host.docker.internal || true
                 '''
             }
         }
 
         stage('Descarga de Codigo') {
             steps {
-                git branch: 'main', url: "${env.GIT_URL}"
+                deleteDir()
+                git branch: "${env.GIT_BRANCH}", url: "${env.GIT_URL}"
             }
         }
 
@@ -75,18 +68,22 @@ pipeline {
         stage('SAST - Semgrep') {
             steps {
                 sh '''
+                    set +e
+                    rm -f "$REPORTS_DIR/semgrep_report.json" || true
+
                     docker run --rm \
                       -u 0:0 \
                       -v "$WORKSPACE:/src" \
-                      -w /src \
                       -v "$REPORTS_DIR:/reports" \
+                      -w /src \
                       returntocorp/semgrep \
-                      semgrep --config auto . \
-                      --json \
-                      --output /reports/semgrep_report.json || true
+                      semgrep --config auto . --json --output /reports/semgrep_report.json
 
+                    EXIT_CODE=$?
+                    echo "Semgrep exit code: $EXIT_CODE"
                     echo "Contenido tras Semgrep:"
                     ls -lah "$REPORTS_DIR" || true
+                    exit 0
                 '''
             }
         }
@@ -94,6 +91,7 @@ pipeline {
         stage('Compilacion') {
             steps {
                 sh '''
+                    set -e
                     mvn -B clean package -DskipTests
                     ls -lah target
                 '''
@@ -103,6 +101,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
+                    set -e
                     docker build -t "$IMAGE_NAME" .
                 '''
             }
@@ -111,111 +110,127 @@ pipeline {
         stage('Container Scan - Trivy') {
             steps {
                 sh '''
+                    set +e
+                    rm -f "$REPORTS_DIR/trivy_report.json" || true
+
                     docker run --rm \
                       -u 0:0 \
                       -v /var/run/docker.sock:/var/run/docker.sock \
-                      -v "$REPORTS_DIR:/mnt" \
+                      -v "$REPORTS_DIR:/reports" \
                       aquasec/trivy:latest image \
                       --timeout 15m \
                       --format json \
-                      --output /mnt/trivy_report.json \
-                      "$IMAGE_NAME" || true
+                      --output /reports/trivy_report.json \
+                      "$IMAGE_NAME"
 
+                    EXIT_CODE=$?
+                    echo "Trivy exit code: $EXIT_CODE"
                     echo "Contenido tras Trivy:"
                     ls -lah "$REPORTS_DIR" || true
+                    exit 0
                 '''
             }
         }
 
         stage('Despliegue') {
             when {
-                expression { return params.ENABLE_DEPLOY }
+                expression { params.ENABLE_DEPLOY }
             }
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'vm-access', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'vm-access',
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
+                    )
+                ]) {
                     sh '''
                         set -euxo pipefail
 
                         echo "========== PRUEBA SSH =========="
-                        ssh -vv -p "$VM_SSH_PORT" \
-                          -o StrictHostKeyChecking=no \
-                          -o BatchMode=yes \
-                          -o ConnectTimeout=10 \
-                          -i "$SSH_KEY" \
+                        ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
                           "$SSH_USER@$VM_IP" 'echo CONEXION_OK && whoami && hostname && java -version'
 
                         echo "========== DETENER APP ANTERIOR =========="
-                        ssh -p "$VM_SSH_PORT" \
-                          -o StrictHostKeyChecking=no \
-                          -o BatchMode=yes \
-                          -i "$SSH_KEY" \
-                          "$SSH_USER@$VM_IP" '
-                            pkill -f app.jar || true
-                            fuser -k '"$APP_PORT"'/tcp || true
+                        ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
+                          "$SSH_USER@$VM_IP" "
+                            fuser -k ${APP_PORT}/tcp || true
                             sleep 2
-                          '
+                          "
 
                         echo "========== COPIAR JAR =========="
-                        scp -v -P "$VM_SSH_PORT" \
-                          -o StrictHostKeyChecking=no \
-                          -o BatchMode=yes \
-                          -i "$SSH_KEY" \
+                        scp $SSH_OPTS -P "$VM_SSH_PORT" -i "$SSH_KEY" \
                           target/*.jar \
                           "$SSH_USER@$VM_IP:$APP_PATH/app.jar"
 
                         echo "========== ARRANCAR APP =========="
-                        ssh -p "$VM_SSH_PORT" \
-                          -o StrictHostKeyChecking=no \
-                          -o BatchMode=yes \
-                          -i "$SSH_KEY" \
-                          "$SSH_USER@$VM_IP" '
-                            nohup java -jar /tmp/app.jar --server.port='"$APP_PORT"' > /tmp/app.log 2>&1 &
-                          '
+                        ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
+                          "$SSH_USER@$VM_IP" "
+                            nohup java -jar $APP_PATH/app.jar --server.port=${APP_PORT} > /tmp/app.log 2>&1 &
+                          "
 
-                        echo "========== VALIDAR ARRANQUE =========="
-                        ssh -p "$VM_SSH_PORT" \
-                          -o StrictHostKeyChecking=no \
-                          -o BatchMode=yes \
-                          -i "$SSH_KEY" \
-                          "$SSH_USER@$VM_IP" '
+                        echo "========== VALIDAR ARRANQUE EN VM =========="
+                        ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
+                          "$SSH_USER@$VM_IP" "
                             sleep 10
-                            echo "---- JAR ----"
-                            ls -l /tmp/app.jar
-                            echo "---- PUERTO ----"
-                            ss -tulpn | grep '"$APP_PORT"' || true
-                            echo "---- PROCESO ----"
+                            echo '---- JAR ----'
+                            ls -l $APP_PATH/app.jar
+                            echo '---- PUERTO ----'
+                            ss -tulpn | grep ${APP_PORT} || true
+                            echo '---- PROCESO ----'
                             ps -ef | grep app.jar | grep -v grep || true
-                            echo "---- LOG ----"
+                            echo '---- LOG ----'
                             tail -n 50 /tmp/app.log || true
-                            echo "---- HEALTH ----"
-                            curl -f http://127.0.0.1:'"$APP_PORT"'/health
-                          '
+                            echo '---- HEALTH VM ----'
+                            curl -f http://127.0.0.1:${APP_PORT}/health
+                          "
                     '''
                 }
+            }
+        }
+
+        stage('Validar Acceso desde Jenkins') {
+            when {
+                expression { params.ENABLE_DEPLOY }
+            }
+            steps {
+                sh '''
+                    set -eux
+                    echo "========== HEALTH DESDE JENKINS =========="
+                    curl -v --max-time 20 http://host.docker.internal:8081/health
+                '''
             }
         }
 
         stage('DAST - OWASP ZAP') {
             when {
                 allOf {
-                    expression { return params.ENABLE_DEPLOY }
-                    expression { return params.ENABLE_DAST }
+                    expression { params.ENABLE_DEPLOY }
+                    expression { params.ENABLE_DAST }
                 }
             }
             steps {
                 sh '''
+                    set +e
+                    rm -f "$REPORTS_DIR/zap_report.json" "$REPORTS_DIR/zap_report.html" "$REPORTS_DIR/zap_report.md" || true
                     chmod -R 777 "$REPORTS_DIR" || true
 
                     docker run --rm \
                       -u 0:0 \
-                      -v "$REPORTS_DIR:/zap/wrk:rw" \
-                      ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+                      -v "$REPORTS_DIR:/zap/wrk" \
+                      --workdir /zap/wrk \
+                      ghcr.io/zaproxy/zaproxy:stable \
+                      zap-baseline.py \
                       -t http://host.docker.internal:8081/health \
                       -J zap_report.json \
-                      -r zap_report.html || true
+                      -r zap_report.html \
+                      -w zap_report.md
 
+                    EXIT_CODE=$?
+                    echo "ZAP exit code: $EXIT_CODE"
                     echo "Contenido tras ZAP:"
                     ls -lah "$REPORTS_DIR" || true
+                    exit 0
                 '''
             }
         }
