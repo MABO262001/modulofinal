@@ -217,11 +217,16 @@ pipeline {
             steps {
                 sh '''
                     set +e
-                    docker rm -f zap_scan >/dev/null 2>&1 || true
+
+                    docker rm -f zap_scan zap_export >/dev/null 2>&1 || true
+                    docker volume rm zap_reports >/dev/null 2>&1 || true
                     rm -f "$REPORTS_DIR/zap_report.json" "$REPORTS_DIR/zap_report.html" || true
+
+                    docker volume create zap_reports
 
                     docker run --name zap_scan \
                       -u 0:0 \
+                      -v zap_reports:/zap/wrk \
                       ghcr.io/zaproxy/zaproxy:stable \
                       zap-baseline.py \
                       -t http://host.docker.internal:8081/health \
@@ -231,16 +236,18 @@ pipeline {
                     ZAP_EXIT=$?
                     echo "ZAP exit code: $ZAP_EXIT"
 
+                    docker create --name zap_export -v zap_reports:/from alpine:3.20 sh >/dev/null
+
                     echo "Intentando copiar reportes ZAP..."
-                    docker cp zap_scan:/zap/wrk/zap_report.json "$REPORTS_DIR/zap_report.json" || true
-                    docker cp zap_scan:/zap/wrk/zap_report.html "$REPORTS_DIR/zap_report.html" || true
-                    docker cp zap_scan:/home/zap/zap_report.json "$REPORTS_DIR/zap_report.json" || true
-                    docker cp zap_scan:/home/zap/zap_report.html "$REPORTS_DIR/zap_report.html" || true
+                    docker cp zap_export:/from/zap_report.json "$REPORTS_DIR/zap_report.json" || true
+                    docker cp zap_export:/from/zap_report.html "$REPORTS_DIR/zap_report.html" || true
 
-                    echo "Listado interno del contenedor ZAP:"
-                    docker exec zap_scan sh -c 'ls -lah /zap/wrk || true; ls -lah /home/zap || true' || true
+                    echo "Listado del volumen ZAP:"
+                    docker start zap_export >/dev/null 2>&1 || true
+                    docker exec zap_export sh -c 'ls -lah /from || true' || true
 
-                    docker rm -f zap_scan >/dev/null 2>&1 || true
+                    docker rm -f zap_scan zap_export >/dev/null 2>&1 || true
+                    docker volume rm zap_reports >/dev/null 2>&1 || true
 
                     echo "Contenido tras ZAP:"
                     ls -lah "$REPORTS_DIR" || true
