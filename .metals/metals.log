@@ -1,0 +1,114 @@
+2026.03.15 23:33:05 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at d:\Proyectos\Diplomado\Modulo 5\modulofinal\.metals\lsp.trace.json or C:\Users\balli\AppData\Local\scalameta\metals\cache\lsp.trace.json
+2026.03.15 23:33:20 INFO  logging to files D:\Proyectos\Diplomado\Modulo 5\modulofinal\.metals\metals.log
+2026.03.15 23:33:20 INFO  Started: Metals version 1.6.6 in folders 'D:\Proyectos\Diplomado\Modulo 5\modulofinal' for client Visual Studio Code 1.111.0.
+2026.03.15 23:33:20 INFO  time: initialize in 0.13s
+2026.03.15 23:33:20 INFO  Memory monitor started
+2026.03.15 23:33:29 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.
+2026.03.15 23:33:34 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\DemoApplication.java. Using fallback presentation compiler.
+mar 15, 2026 11:33:36 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 2
+mar 15, 2026 11:33:36 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 1
+2026.03.15 23:33:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+mar 15, 2026 11:33:37 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 8
+mar 15, 2026 11:33:37 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 4
+mar 15, 2026 11:33:37 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 9
+2026.03.15 23:33:37 WARN  no build target for: D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java
+2026.03.15 23:33:37 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:43 WARN  Running javac-semanticdb failed for file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/VulnerableController.java. Output:
+
+2026.03.15 23:33:49 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:49 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:53 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:53 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:53 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+mar 15, 2026 11:33:53 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 23
+2026.03.15 23:33:54 WARN  no build target for: D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java
+2026.03.15 23:33:54 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:54 INFO  Created report: Optional[file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/VulnerableController.java]
+2026.03.15 23:33:54 INFO  QDox parse error in file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/VulnerableController.java (full report at: "D:\Proyectos\Diplomado\Modulo 5\modulofinal\.metals\.reports\metals-full\2026-03-15\r_qdox-error_23-33-54-222.md")
+2026.03.15 23:33:54 WARN  Running javac-semanticdb failed for file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/VulnerableController.java. Output:
+
+2026.03.15 23:33:56 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:56 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:57 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:57 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:58 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+mar 15, 2026 11:33:58 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 31
+2026.03.15 23:33:58 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+mar 15, 2026 11:33:58 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 32
+2026.03.15 23:33:58 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:59 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:33:59 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:34:00 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+mar 15, 2026 11:34:01 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 35
+mar 15, 2026 11:34:01 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 37
+mar 15, 2026 11:34:01 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 34
+mar 15, 2026 11:34:01 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 36
+2026.03.15 23:34:01 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:34:01 WARN  no build target for: D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java
+2026.03.15 23:34:01 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:34:01 WARN  Running javac-semanticdb failed for file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/VulnerableController.java. Output:
+
+2026.03.15 23:34:03 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:34:05 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\VulnerableController.java. Using fallback presentation compiler.
+2026.03.15 23:34:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:40 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:40 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:40 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:41 WARN  no build target for: D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java
+2026.03.15 23:34:41 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:41 WARN  Running javac-semanticdb failed for file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/BuenaPracVulnerable.java. Output:
+
+2026.03.15 23:34:42 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:42 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:44 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:44 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:44 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+mar 15, 2026 11:34:44 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 63
+mar 15, 2026 11:34:44 P. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 67
+2026.03.15 23:34:44 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:44 WARN  no build target for: D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java
+2026.03.15 23:34:46 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:46 WARN  Running javac-semanticdb failed for file:///D:/Proyectos/Diplomado/Modulo%205/modulofinal/src/main/java/com/example/demo/BuenaPracVulnerable.java. Output:
+
+2026.03.15 23:34:47 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:48 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:57 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.15 23:34:57 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:39 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:43 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:43 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:43 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+mar 16, 2026 12:23:44 A. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 83
+2026.03.16 00:23:46 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:47 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:47 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 00:23:48 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 01:43:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 01:43:37 WARN  no build target for: D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java
+mar 16, 2026 1:43:37 A. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 93
+2026.03.16 01:43:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+mar 16, 2026 1:43:37 A. M. org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+ADVERTENCIA: Unmatched cancel notification for request id 94
+2026.03.16 01:43:36 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 01:43:37 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 01:43:38 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
+2026.03.16 01:43:38 INFO  no build target found for D:\Proyectos\Diplomado\Modulo 5\modulofinal\src\main\java\com\example\demo\BuenaPracVulnerable.java. Using fallback presentation compiler.
