@@ -10,9 +10,15 @@ pipeline {
         disableConcurrentBuilds()
     }
 
+    triggers {
+        githubPush()
+    }
+
     parameters {
         booleanParam(name: 'ENABLE_DEPLOY', defaultValue: true, description: 'Desplegar a Ubuntu por SSH')
         booleanParam(name: 'ENABLE_DAST', defaultValue: true, description: 'Ejecutar ZAP contra la app desplegada')
+        booleanParam(name: 'ENABLE_SNYK', defaultValue: true, description: 'Ejecutar Snyk para analisis SCA')
+        booleanParam(name: 'ENABLE_DEFECTDOJO', defaultValue: true, description: 'Subir reportes a DefectDojo')
     }
 
     environment {
@@ -25,6 +31,11 @@ pipeline {
         IMAGE_NAME  = 'app-segura:latest'
         APP_PORT    = '8081'
         SSH_OPTS    = '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20'
+
+        SNYK_TOKEN         = credentials('snyk-token')
+        DOJO_API_KEY       = credentials('defectdojo-api-key')
+        DOJO_ENGAGEMENT_ID = credentials('defectdojo-engagement-id')
+        DOJO_URL           = 'http://host.docker.internal:9000'
     }
 
     stages {
@@ -41,6 +52,9 @@ pipeline {
                     docker --version
                     docker ps || true
                     getent hosts host.docker.internal || true
+
+                    echo "========== PRUEBA DEFECTDOJO =========="
+                    curl -I --max-time 15 "$DOJO_URL" || true
                 '''
             }
         }
@@ -69,6 +83,7 @@ pipeline {
                 sh '''
                     set +e
                     docker rm -f semgrep_scan >/dev/null 2>&1 || true
+                    rm -f "$REPORTS_DIR/semgrep_report.json" || true
 
                     docker run --name semgrep_scan \
                       -u 0:0 \
@@ -114,6 +129,7 @@ pipeline {
                 sh '''
                     set +e
                     docker rm -f trivy_scan >/dev/null 2>&1 || true
+                    rm -f "$REPORTS_DIR/trivy_report.json" || true
 
                     docker run --name trivy_scan \
                       -u 0:0 \
@@ -131,6 +147,33 @@ pipeline {
                     docker rm -f trivy_scan >/dev/null 2>&1 || true
 
                     echo "Contenido tras Trivy:"
+                    ls -lah "$REPORTS_DIR" || true
+                    exit 0
+                '''
+            }
+        }
+
+        stage('SCA - Snyk') {
+            when {
+                expression { params.ENABLE_SNYK }
+            }
+            steps {
+                sh '''
+                    set +e
+                    rm -f snyk snyk_report.json "$REPORTS_DIR/snyk_report.json" || true
+
+                    curl -sL https://static.snyk.io/cli/latest/snyk-linux -o snyk
+                    chmod +x snyk
+
+                    ./snyk auth "$SNYK_TOKEN"
+                    ./snyk test --file=pom.xml --json > snyk_report.json
+
+                    SNYK_EXIT=$?
+                    echo "Snyk exit code: $SNYK_EXIT"
+
+                    cp snyk_report.json "$REPORTS_DIR/snyk_report.json" || true
+
+                    echo "Contenido tras Snyk:"
                     ls -lah "$REPORTS_DIR" || true
                     exit 0
                 '''
@@ -251,6 +294,78 @@ pipeline {
 
                     echo "Contenido tras ZAP:"
                     ls -lah "$REPORTS_DIR" || true
+                    exit 0
+                '''
+            }
+        }
+
+        stage('Subir a DefectDojo') {
+            when {
+                expression { params.ENABLE_DEFECTDOJO }
+            }
+            steps {
+                sh '''
+                    set +e
+
+                    echo "========== VALIDAR API DEFECTDOJO =========="
+                    curl -sS -H "Authorization: Token $DOJO_API_KEY" \
+                      "$DOJO_URL/api/v2/products/" | head -c 500 || true
+                    echo ""
+
+                    echo "========== SUBIENDO REPORTES A DEFECTDOJO =========="
+
+                    if [ -f "$REPORTS_DIR/semgrep_report.json" ]; then
+                      echo "Subiendo Semgrep..."
+                      curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
+                        -H "Authorization: Token $DOJO_API_KEY" \
+                        -F "scan_type=Semgrep JSON Report" \
+                        -F "file=@$REPORTS_DIR/semgrep_report.json" \
+                        -F "engagement=$DOJO_ENGAGEMENT_ID" \
+                        -F "active=true" \
+                        -F "verified=true" \
+                        -F "close_old_findings=false"
+                      echo ""
+                    fi
+
+                    if [ -f "$REPORTS_DIR/trivy_report.json" ]; then
+                      echo "Subiendo Trivy..."
+                      curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
+                        -H "Authorization: Token $DOJO_API_KEY" \
+                        -F "scan_type=Trivy Scan" \
+                        -F "file=@$REPORTS_DIR/trivy_report.json" \
+                        -F "engagement=$DOJO_ENGAGEMENT_ID" \
+                        -F "active=true" \
+                        -F "verified=true" \
+                        -F "close_old_findings=false"
+                      echo ""
+                    fi
+
+                    if [ -f "$REPORTS_DIR/zap_report.json" ]; then
+                      echo "Subiendo ZAP..."
+                      curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
+                        -H "Authorization: Token $DOJO_API_KEY" \
+                        -F "scan_type=ZAP Scan" \
+                        -F "file=@$REPORTS_DIR/zap_report.json" \
+                        -F "engagement=$DOJO_ENGAGEMENT_ID" \
+                        -F "active=true" \
+                        -F "verified=true" \
+                        -F "close_old_findings=false"
+                      echo ""
+                    fi
+
+                    if [ -f "$REPORTS_DIR/snyk_report.json" ]; then
+                      echo "Subiendo Snyk..."
+                      curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
+                        -H "Authorization: Token $DOJO_API_KEY" \
+                        -F "scan_type=Snyk Scan" \
+                        -F "file=@$REPORTS_DIR/snyk_report.json" \
+                        -F "engagement=$DOJO_ENGAGEMENT_ID" \
+                        -F "active=true" \
+                        -F "verified=true" \
+                        -F "close_old_findings=false"
+                      echo ""
+                    fi
+
                     exit 0
                 '''
             }
