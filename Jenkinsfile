@@ -30,6 +30,7 @@ pipeline {
         REPORTS_DIR = "${WORKSPACE}/modulofin"
         IMAGE_NAME  = 'app-segura:latest'
         APP_PORT    = '8081'
+        APP_HEALTH  = '/health'
         SSH_OPTS    = '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20'
 
         SNYK_TOKEN         = credentials('snyk-token')
@@ -203,7 +204,7 @@ pipeline {
                         ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
                           "$SSH_USER@$VM_IP" "
                             fuser -k ${APP_PORT}/tcp || true
-                            sleep 2
+                            sleep 3
                           "
 
                         echo "========== COPIAR JAR =========="
@@ -215,22 +216,40 @@ pipeline {
                         ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
                           "$SSH_USER@$VM_IP" "
                             nohup java -jar $APP_PATH/app.jar --server.port=${APP_PORT} > /tmp/app.log 2>&1 &
+                            echo \\$! > /tmp/app.pid
+                            sleep 2
+                            echo 'PID actual:'
+                            cat /tmp/app.pid || true
+                            ps -ef | grep app.jar | grep -v grep || true
                           "
 
                         echo "========== VALIDAR ARRANQUE EN VM =========="
                         ssh $SSH_OPTS -p "$VM_SSH_PORT" -i "$SSH_KEY" \
                           "$SSH_USER@$VM_IP" "
-                            sleep 10
+                            for i in \\$(seq 1 18); do
+                              echo '=============================='
+                              echo 'Intento de health #' \\$i
+                              echo '---- PROCESO ----'
+                              ps -ef | grep app.jar | grep -v grep || true
+                              echo '---- PUERTO ----'
+                              ss -ltn | grep :${APP_PORT} || true
+                              echo '---- HEALTH ----'
+                              curl -fsS http://127.0.0.1:${APP_PORT}${APP_HEALTH} && exit 0
+                              sleep 5
+                            done
+
+                            echo '=============================='
+                            echo 'FALLO: la aplicacion no respondio al health dentro del tiempo esperado'
                             echo '---- JAR ----'
-                            ls -l $APP_PATH/app.jar
+                            ls -l $APP_PATH/app.jar || true
                             echo '---- PUERTO ----'
                             ss -tulpn | grep ${APP_PORT} || true
                             echo '---- PROCESO ----'
                             ps -ef | grep app.jar | grep -v grep || true
                             echo '---- LOG ----'
-                            tail -n 50 /tmp/app.log || true
-                            echo '---- HEALTH VM ----'
-                            curl -f http://127.0.0.1:${APP_PORT}/health
+                            tail -n 100 /tmp/app.log || true
+
+                            exit 1
                           "
                     '''
                 }
@@ -244,8 +263,16 @@ pipeline {
             steps {
                 sh '''
                     set -eux
+
                     echo "========== HEALTH DESDE JENKINS =========="
-                    curl -v --max-time 20 http://host.docker.internal:8081/health
+                    for i in $(seq 1 12); do
+                      echo "Intento $i desde Jenkins"
+                      curl -v --max-time 10 "http://host.docker.internal:${APP_PORT}${APP_HEALTH}" && exit 0
+                      sleep 5
+                    done
+
+                    echo "FALLO: Jenkins no pudo acceder al health de la aplicacion"
+                    exit 1
                 '''
             }
         }
@@ -272,7 +299,7 @@ pipeline {
                       -v zap_reports:/zap/wrk \
                       ghcr.io/zaproxy/zaproxy:stable \
                       zap-baseline.py \
-                      -t http://host.docker.internal:8081/health \
+                      -t "http://host.docker.internal:${APP_PORT}${APP_HEALTH}" \
                       -J zap_report.json \
                       -r zap_report.html
 
@@ -281,18 +308,15 @@ pipeline {
 
                     docker create --name zap_export -v zap_reports:/from alpine:3.20 sh >/dev/null
 
-                    echo "Intentando copiar reportes ZAP..."
                     docker cp zap_export:/from/zap_report.json "$REPORTS_DIR/zap_report.json" || true
                     docker cp zap_export:/from/zap_report.html "$REPORTS_DIR/zap_report.html" || true
 
-                    echo "Listado del volumen ZAP:"
                     docker start zap_export >/dev/null 2>&1 || true
                     docker exec zap_export sh -c 'ls -lah /from || true' || true
 
                     docker rm -f zap_scan zap_export >/dev/null 2>&1 || true
                     docker volume rm zap_reports >/dev/null 2>&1 || true
 
-                    echo "Contenido tras ZAP:"
                     ls -lah "$REPORTS_DIR" || true
                     exit 0
                 '''
@@ -307,15 +331,11 @@ pipeline {
                 sh '''
                     set +e
 
-                    echo "========== VALIDAR API DEFECTDOJO =========="
                     curl -sS -H "Authorization: Token $DOJO_API_KEY" \
                       "$DOJO_URL/api/v2/products/" | head -c 500 || true
                     echo ""
 
-                    echo "========== SUBIENDO REPORTES A DEFECTDOJO =========="
-
                     if [ -f "$REPORTS_DIR/semgrep_report.json" ]; then
-                      echo "Subiendo Semgrep..."
                       curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
                         -H "Authorization: Token $DOJO_API_KEY" \
                         -F "scan_type=Semgrep JSON Report" \
@@ -328,7 +348,6 @@ pipeline {
                     fi
 
                     if [ -f "$REPORTS_DIR/trivy_report.json" ]; then
-                      echo "Subiendo Trivy..."
                       curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
                         -H "Authorization: Token $DOJO_API_KEY" \
                         -F "scan_type=Trivy Scan" \
@@ -341,7 +360,6 @@ pipeline {
                     fi
 
                     if [ -f "$REPORTS_DIR/zap_report.json" ]; then
-                      echo "Subiendo ZAP..."
                       curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
                         -H "Authorization: Token $DOJO_API_KEY" \
                         -F "scan_type=ZAP Scan" \
@@ -354,7 +372,6 @@ pipeline {
                     fi
 
                     if [ -f "$REPORTS_DIR/snyk_report.json" ]; then
-                      echo "Subiendo Snyk..."
                       curl -sS -X POST "$DOJO_URL/api/v2/import-scan/" \
                         -H "Authorization: Token $DOJO_API_KEY" \
                         -F "scan_type=Snyk Scan" \
